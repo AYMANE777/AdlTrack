@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  email     String   @unique
+  password  String
+  role      String   @default("CLERK")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  alternativePenaltiesCreated   AlternativePenalty[]              @relation("AlternativePenaltyCreatedBy")
+  alternativePenaltiesUpdated   AlternativePenalty[]              @relation("AlternativePenaltyUpdatedBy")
+  rehabilitationRapportsCreated RehabilitationRequestRapport[]    @relation("RapportCreatedBy")
+  rehabilitationRapportsUpdated RehabilitationRequestRapport[]    @relation("RapportUpdatedBy")
+  auditLogs                     AuditLog[]                        @relation("AuditLogPerformedBy")
+
+  @@map("user")
+}
+
+model RehabilitationRequest {
+  id                       Int       @id @default(autoincrement())
+  ordinalNumber            Int
+  year                     Int
+  ordinalFull              String
+  FullName                 String
+  cin                      String
+  request_date             DateTime
+  prosecution_inquiry_date DateTime?
+  prosecution_opinion      String?   @db.Text
+  request_status           String    @default("PENDING")
+  createdById              Int
+  updatedById              Int?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@index([createdById], map: "rehabilitation_requests_createdById_fkey")
+  @@index([updatedById], map: "rehabilitation_requests_updatedById_fkey")
+  @@map("rehabilitation_requests")
+}
+
+model AlternativePenalty {
+  id                          Int       @id @default(autoincrement())
+  serial_number               Int
+  year                        Int       @default(2026)
+  ordinal_full                String    @default("")
+  full_name                   String
+  national_id                 String
+  address_contact             String?   @db.Text
+  source_court                String?
+  case_number                 String?
+  judgment_number             String?
+  judgment_date               DateTime?
+  crime_type                  String?
+  original_penalty_type       String?
+  original_penalty_duration   String?
+  alternative_penalty_type    String?
+  alternative_penalty_details String?   @db.Text
+  supervising_institution     String?
+  prosecution_referral_date   DateTime?
+  execution_decision_number   String?
+  execution_decision_date     DateTime?
+  execution_decision_content  String?   @db.Text
+  followup_orders             String?   @db.Text
+  report_received_date        DateTime?
+  responsible_authority       String?
+  compliance_notes            String?   @db.Text
+  appellant_identity          String?
+  dispute_date                DateTime?
+  dispute_subject             String?   @db.Text
+  dispute_outcome             String?   @db.Text
+  final_decision_date         DateTime?
+  appeal_deadline             DateTime?
+  notification_date           DateTime?
+  judge_notes                 String?   @db.Text
+  createdById                 Int
+  updatedById                 Int?
+  createdAt                   DateTime  @default(now()) @map("created_at")
+  updatedAt                   DateTime  @updatedAt @map("updated_at")
+
+  createdBy                   User      @relation("AlternativePenaltyCreatedBy", fields: [createdById], references: [id])
+  updatedBy                   User?     @relation("AlternativePenaltyUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById], map: "alternative_penalties_registry_createdById_fkey")
+  @@index([updatedById], map: "alternative_penalties_registry_updatedById_fkey")
+  @@map("alternative_penalties_registry")
+}
+
+model RehabilitationRequestRapport {
+  id                        Int       @id @default(autoincrement())
+  ordinalNumber             Int
+  year                      Int
+  ordinalFull               String
+  rehabilitationRequestId   Int
+  num_dossier               String
+  FullName                  String
+  fils_de_pere              String
+  fils_de_mere              String
+  date_naissance            DateTime
+  adresse                   String?   @db.Text
+  date_de_faire             DateTime
+  tribunal                  String
+  ville                     String
+  status                    String    @default("PENDING")
+  autre_condition           String?   @db.Text
+  date                      DateTime
+  createdById               Int
+  updatedById               Int?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  createdBy                 User      @relation("RapportCreatedBy", fields: [createdById], references: [id])
+  updatedBy                 User?     @relation("RapportUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById], map: "rehabilitation_requests_rapport_createdById_fkey")
+  @@index([updatedById], map: "rehabilitation_requests_rapport_updatedById_fkey")
+  @@index([rehabilitationRequestId], map: "rehabilitation_requests_rapport_requestId_fkey")
+  @@map("rehabilitation_requests_rapport")
+}
+
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  tableName     String
+  recordId      Int
+  action        String
+  oldData       String?  @db.Text
+  newData       String?  @db.Text
+  performedById Int
+  performedAt   DateTime @default(now())
+
+  performedBy   User     @relation("AuditLogPerformedBy", fields: [performedById], references: [id])
+
+  @@index([performedById], map: "auditlog_performedById_fkey")
+  @@map("auditlog")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId], map: "notification_userId_fkey")
+  @@map("notification")
+}
