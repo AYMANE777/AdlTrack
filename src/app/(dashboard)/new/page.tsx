@@ -1,11 +1,5 @@
-"use client";
-
-import { RegistrationForm } from "@/components/RegistrationForm";
+import { redirect } from "next/navigation";
 
 export default function NewEntryPage() {
-  return (
-    <div className="animate-in fade-in duration-500">
-      <RegistrationForm />
-    </div>
-  );
+  redirect("/rehabilitation-requests/new");
 }
