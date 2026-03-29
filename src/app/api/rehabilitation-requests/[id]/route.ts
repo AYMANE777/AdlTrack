@@ -5,10 +5,11 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const request = await prisma.rehabilitationRequest.findUnique({
       where: { id },
       include: {
@@ -29,10 +30,11 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const body = await req.json();
     
     const oldRequest = await prisma.rehabilitationRequest.findUnique({ where: { id } });
@@ -73,10 +75,11 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const oldRequest = await prisma.rehabilitationRequest.findUnique({ where: { id } });
     
     await prisma.rehabilitationRequest.delete({ where: { id } });
